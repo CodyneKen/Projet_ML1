@@ -1,19 +1,16 @@
-version: '3.8'  
- 
-networks:  
-     serving_prod_net:  
-         external: true  
- 
-services:  
-     webapp:  
-         container_name: webapp  
- 
-build: 
-     context: . 
-          dockerfile: Dockerfile  
- 
-ports: 
-    - "8081:8081"  
- 
-networks: 
-     - serving_prod_net
+version: "3.8"
+
+networks:
+  serving_prod_net:
+    driver: bridge
+
+services:
+  webapp:
+    container_name: webapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - serving_prod_net
