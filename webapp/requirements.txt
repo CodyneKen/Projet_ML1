@@ -1,2 +1,4 @@
 streamlit
 streamlit_mic_recorder
+sounddevice 
+wavio
