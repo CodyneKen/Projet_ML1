@@ -1,5 +1,2 @@
 fastapi
 uvicorn
-librosa
-numpy
-pandas
