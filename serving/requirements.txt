@@ -8,3 +8,5 @@ keras
 tensorflow
 librosa
 python-multipart
+pandas
+seaborn

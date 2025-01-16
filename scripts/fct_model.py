@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
 import dill
+import librosa
 
 def preprocess_data(df):
     """
@@ -127,17 +128,19 @@ def predict_on_audio(model, encoder, scaler, audio_data, sample_rate):
     """
     embedding_size = 162
     emotion_mapping = {
-        'C': 'anger',
-        'T': 'sadness',
-        'J': 'joy',
-        'P': 'fear',
-        'D': 'disgust',
-        'S': 'surprise',
-        'N': 'neutral'
+        'C': 'Colère 😡​',   
+        'T': 'Tristesse 😢​',
+        'J': 'Joie 😁​',     
+        'P': 'Peur 😨​',     
+        'D': 'Dégoût ​☹️​',   
+        'S': 'Surprise ​​😮​', 
+        'N': 'Neutre 😐​'    
     }
 
     with open("../artifacts/extract_features.pkl", "rb") as f:
         extract_features_test = dill.load(f)
+        extract_features_test.__globals__["np"] = np
+        extract_features_test.__globals__["librosa"] = librosa
 
     # Extract features using the pre-loaded function
     try:

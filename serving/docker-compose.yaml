@@ -14,6 +14,7 @@ services:
       - ./api.py:/app/api.py
       - ../data:/data
       - ../artifacts:/artifacts
+      - ../scripts/fct_model.py:/app/fct_model.py
     ports:
       - "8080:8080"
     networks:
