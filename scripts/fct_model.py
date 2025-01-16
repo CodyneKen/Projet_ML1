@@ -11,13 +11,22 @@ from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
 import dill
 import librosa
+import os
 
 def preprocess_data(df):
     """
-    Prétraitement des données et renvoie X, y, encoder, scaler
+    Prétraitement des données et renvoie X, y, encoder, scaler.
+    Gère le cas où le dataframe contient soit 'target', soit 'target' et 'prediction'.
     """
-    X = df.iloc[:, :-1].values  
-    y = df['labels'].values
+    if 'target' not in df.columns:
+        raise ValueError("The input DataFrame must contain a 'target' column.")
+    
+    if 'prediction' in df.columns:
+        X = df.drop(columns=['target', 'prediction']).values
+    else:
+        X = df.iloc[:, :-1].values
+        
+    y = df['target'].values
 
     #on encode les labels
     encoder = OneHotEncoder()
@@ -31,6 +40,7 @@ def preprocess_data(df):
     X = np.expand_dims(X, axis=2)
 
     return X, Y, encoder, scaler
+
 
 def define_model(input_dim):
     """
@@ -163,7 +173,7 @@ def predict_on_audio(model, encoder, scaler, audio_data, sample_rate):
     # Return the predicted label
     return {"prediction": predicted_emotion}
 
-def train_save_model(csv_path, output_model_path):
+def train_save_model(csv_path, output_model_path, verbose=2):
     """
     Entrainer un cnn sur les données du csv et sauvegarder le model, encoder, scaler
     """
@@ -225,7 +235,8 @@ def train_save_model(csv_path, output_model_path):
         Y, 
         epochs=50, 
         batch_size=64, 
-        callbacks=[rlrp]
+        callbacks=[rlrp],
+        verbose=verbose
     )
 
     #on sauvegarde le model
@@ -233,3 +244,23 @@ def train_save_model(csv_path, output_model_path):
 
     return model_full, history
 
+def save_feedback(audio_data, sample_rate, target, prediction, output_path):
+    with open("../artifacts/extract_features.pkl", "rb") as f:
+        extract_features_test = dill.load(f)
+        extract_features_test.__globals__["np"] = np
+        extract_features_test.__globals__["librosa"] = librosa
+        
+    try:
+        features = extract_features_test(audio_data, sample_rate)
+    except Exception as e:
+        return {"error": f"Failed to extract features: {str(e)}"}
+
+    Features = pd.DataFrame(features).T
+    Features['target'] = target
+    Features['prediction'] = prediction
+    
+    file_exists_and_non_empty = os.path.isfile(output_path) and os.path.getsize(output_path) > 0
+    
+    Features.to_csv(output_path, mode='a',
+                    header=not file_exists_and_non_empty,
+                    index=False)

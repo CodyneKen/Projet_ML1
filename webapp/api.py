@@ -57,9 +57,8 @@ def send_feedback(audio_data, predicted, correct):
     api_url = "http://serving-api:8080/feedback"
     files = {'file': ('audio.wav', audio_data, 'audio/wav')}
     data = {'prediction': predicted, 'target': correct}
-
     try:
-        response = requests.post(api_url, files=files, data=data)
+        response = requests.post(api_url, files=files, params=data)
         if response.status_code == 200:
             st.session_state['feedback_sent'] = True
             st.success("Merci pour votre retour !")
