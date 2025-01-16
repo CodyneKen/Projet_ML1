@@ -6,6 +6,10 @@ import requests
 import wavio
 from datetime import datetime
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # App Title
 st.title("Détection d'émotion à partir de la voix")
 
@@ -34,9 +38,10 @@ def predict_emotion(audio_data):
         response = requests.post(api_url, files=files)
         if response.status_code == 200:
             result = response.json()
-            st.success(f"Émotion détectée : {result.get('emotion', 'Inconnue')}")
+            logger.info("Received response: %s", result)
+            st.success(f"Émotion détectée : {result.get('prediction', 'Inconnue')}")
         else:
-            st.error("Erreur lors de la prédiction.")
+            st.error(f"Erreur lors de la prédiction: {response.status_code}")
     except Exception as e:
         st.error(f"Erreur lors de la connexion à l'API : {e}")
 

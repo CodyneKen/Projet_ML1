@@ -21,13 +21,13 @@ with open("/artifacts/extract_features.pkl", "rb") as f:
   get_embedding.__globals__["librosa"] = librosa
 
 emotion_mapping = {
-  'C': 'anger',
-  'T': 'sadness',
-  'J': 'joy',
-  'P': 'fear',
-  'D': 'disgust',
-  'S': 'surprise',
-  'N': 'neutral'
+  'C': 'Colère 😡​',   
+  'T': 'Tristesse 😢​',
+  'J': 'Joie 😁​',     
+  'P': 'Peur 😨​',     
+  'D': 'Dégoût ​☹️​',   
+  'S': 'Surprise ​​😮​', 
+  'N': 'Neutre 😐​'    
 }
 
 @app.get("/")
