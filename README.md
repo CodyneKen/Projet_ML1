@@ -27,6 +27,8 @@ Run if network issue between API and Webapp (run serving-api first):
 docker compose down webapp/docker-compose.yml
 ```
 
+If the reporting displays a white blank page or can't connect to localhost after a docker restart, try deleting localhost cookies.
+
 ## Description
 
 - User can upload .wav files or record themselves
