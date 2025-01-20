@@ -2,30 +2,17 @@ import datetime
 import os
 import pickle
 
-from sklearn import datasets
 import pandas as pd
 
 from evidently.report import Report
-from evidently.ui.workspace import Workspace
-from evidently.ui.workspace import WorkspaceBase
+from evidently.ui.workspace import Workspace, WorkspaceBase
 
-from evidently.ui.dashboards import CounterAgg
-from evidently.ui.dashboards import DashboardPanelCounter
-from evidently.ui.dashboards import PanelValue
-from evidently.ui.dashboards import ReportFilter
+from evidently.ui.dashboards import CounterAgg, DashboardPanelCounter, DashboardPanelPlot, PanelValue, PlotType, ReportFilter
 
+from evidently.metrics import ColumnDistributionMetric, DatasetCorrelationsMetric, ColumnSummaryMetric, DatasetSummaryMetric, ClassificationQualityMetric, ClassificationClassBalance, ClassificationConfusionMatrix
+from evidently.metrics import DatasetDriftMetric, ColumnDriftMetric
 
-from evidently.metrics import ColumnDistributionMetric
-from evidently.metrics import DatasetCorrelationsMetric
-from evidently.metrics import ColumnSummaryMetric
-from evidently.metrics import DatasetSummaryMetric
-from evidently.metrics import DatasetMissingValuesMetric
-from evidently.metrics import ClassificationQualityMetric
-from evidently.metrics import ClassificationClassBalance
-from evidently.metrics import ClassificationConfusionMatrix
-
-from evidently.test_preset import BinaryClassificationTestPreset
-from evidently.test_preset import DataQualityTestPreset
+from evidently.test_preset import BinaryClassificationTestPreset, DataQualityTestPreset
 from evidently.test_suite import TestSuite
 from evidently.tests import *
 
@@ -66,8 +53,9 @@ def create_report(i: int):
             ClassificationQualityMetric(),
             DatasetCorrelationsMetric(),
             ClassificationConfusionMatrix(),
-            #DatasetMissingValuesMetric(),
-
+            DatasetDriftMetric(),  # Add dataset drift metric
+            ColumnDriftMetric(column_name="target"),  # Add column drift metric for target
+            ColumnDriftMetric(column_name="prediction"),  # Add column drift metric for prediction
         ],
         timestamp=datetime.datetime.now() + datetime.timedelta(days=i),
     )
@@ -98,7 +86,7 @@ def create_project(workspace: WorkspaceBase):
         DashboardPanelCounter(
             filter=ReportFilter(metadata_values={}, tag_values=[]),
             agg=CounterAgg.NONE,
-            title="CIFAR10 DATASET",
+            title="RAVDESS DATASET",
         )
     )
 
@@ -129,35 +117,6 @@ def create_project(workspace: WorkspaceBase):
             size=1,
         )
     )
-    '''
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="Nombre de données manquantes dans Prod data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="DatasetSummaryMetric",
-                field_path="missing_values",
-            ),
-            text="",
-            agg=CounterAgg.SUM,
-            size=1,
-        )
-    )
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="Nombre de données manquantes dans Ref Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="DatasetSummaryMetric",
-                field_path="missing_values",
-                legend="Ref Data",
-            ),
-            text="",
-            agg=CounterAgg.SUM,
-            size=1,
-        )
-    )
-    '''
 
     project.dashboard.add_panel(
         DashboardPanelCounter(
@@ -282,118 +241,53 @@ def create_project(workspace: WorkspaceBase):
     )
 
     project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="TPR Prod Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.current.tpr,
-                legend="TPR",
+        DashboardPanelPlot(
+            title="Target Column Drift",
+            filter=ReportFilter(
+                metrics=[ColumnDriftMetric(column_name="target")],
+                metadata_values=[],
+                tag_values=[]
             ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
+            plot_type=PlotType.BAR,
+            values=[PanelValue(
+                metric_id="ColumnDriftMetric",
+                field_path="drift_score",
+                legend="Target Drift",
+            )],
         )
     )
+
     project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="TPR Ref Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.reference.tpr,
-                legend="TPR",
+        DashboardPanelPlot(
+            title="Prediction Column Drift",
+            filter=ReportFilter(
+                metrics=[ColumnDriftMetric(column_name="prediction")],
+                metadata_values=[],
+                tag_values=[]
             ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
+            plot_type=PlotType.BAR,
+            values=[PanelValue(
+                metric_id="ColumnDriftMetric",
+                field_path="drift_score",
+                legend="Prediction Drift",
+            )],
         )
     )
 
     project.dashboard.add_panel(
         DashboardPanelCounter(
-            title="TNR Prod Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
+            title="Share of Drifted Features",
             value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.current.tnr,
-                legend="TNR",
+                metric_id="DatasetDriftMetric",
+                field_path="drift_share",
+                legend="Drifted Features",
             ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
-        )
-    )
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="TNR Ref Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.reference.tnr,
-                legend="TNR",
+            filter=ReportFilter(
+                metrics=[DatasetDriftMetric],
+                metadata_values=[],
+                tag_values=[]
             ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
-        )
-    )
-
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="FPR Prod Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.current.fpr,
-                legend="FPR",
-            ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
-        )
-    )
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="FPR Ref Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.reference.fpr,
-                legend="FPR",
-            ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
-        )
-    )
-
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="FNR Prod Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.current.fnr,
-                legend="FNR",
-            ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
-        )
-    )
-    project.dashboard.add_panel(
-        DashboardPanelCounter(
-            title="FNR Ref Data",
-            filter=ReportFilter(metadata_values={}, tag_values=[]),
-            value=PanelValue(
-                metric_id="ClassificationQualityMetric",
-                field_path=ClassificationQualityMetric.fields.reference.fnr,
-                legend="FNR",
-            ),
-            text="",
-            agg=CounterAgg.LAST,
-            size=1,
+            agg=CounterAgg.SUM,
         )
     )
 
