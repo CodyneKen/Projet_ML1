@@ -12,8 +12,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-k = 1
-deploy_only_best_acc = False
+k = 10
+deploy_only_best_acc = True
 
 artifacts_path = "/artifacts/"
 ref_path = "/data/ref_data.csv"
