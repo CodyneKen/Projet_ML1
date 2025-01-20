@@ -9,5 +9,6 @@ services:
     volumes:
       - ../data:/data
       - ../artifacts:/artifacts
+      - ./project.py:/project.py  # Mount project.py directly for faster development
     ports:
       - "8082:8082"

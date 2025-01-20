@@ -1,2 +1,13 @@
-fastapi
+fastapi~=0.112.2
 uvicorn
+requests~=2.32.3
+pandas~=2.2.2
+matplotlib~=3.9.2
+joblib~=1.4.2
+librosa~=0.10.2.post1
+dill~=0.3.8
+numpy~=1.26.4
+scikit-learn~=1.5.1
+keras~=3.8.0
+seaborn~=0.13.2
+pydantic~=2.8.2

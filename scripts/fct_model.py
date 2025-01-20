@@ -166,6 +166,7 @@ def predict_on_audio(model, encoder, scaler, audio_data, sample_rate):
     try:
         pred = model.predict(features_reshaped)
         predicted_class_label = encoder.inverse_transform(pred)[0][0]
+        print
         predicted_emotion = emotion_mapping[predicted_class_label]
     except Exception as e:
         return {"error": f"Prediction failed: {str(e)}"}
