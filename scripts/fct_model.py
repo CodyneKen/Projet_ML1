@@ -173,41 +173,16 @@ def predict_on_audio(model, encoder, scaler, audio_data, sample_rate):
     # Return the predicted label
     return {"prediction": predicted_emotion}
 
-def train_save_model(csv_path, output_model_path, verbose=2):
+def train_save_model(ref_path, output_model_path, verbose=2, prod_path=None, always_save_model=True, current_acc=None):
     """
     Entrainer un cnn sur les données du csv et sauvegarder le model, encoder, scaler
     """
-    data = pd.read_csv(csv_path)
-
-    """ #on récup les données du csv
-    X = data.iloc[:, :-1].values  
-    y = data['labels'].values
-
-    #on encode les labels
-    encoder = OneHotEncoder()
-    Y = encoder.fit_transform(np.array(y).reshape(-1,1)).toarray()
-
-    #on sauv l'encoder
-    dump(encoder, f'{output_model_path}/encoder.pkl')
-
-    #normalisation
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
-
-    #on sauv le scaler
-    dump(scaler, f'{output_model_path}/scaler.pkl')
-
-    #on reshape les données
-    X = np.expand_dims(X, axis=2) """
-
+    data = pd.read_csv(ref_path)
+    if prod_path != None:
+        data2 = pd.read_csv(prod_path)
+        data2 = data2.drop(columns=['prediction'])
+        data = pd.concat([data, data2], ignore_index=True)
     X, Y, encoder, scaler = preprocess_data(data)
-
-    #on sauv l'encoder
-    dump(encoder, f'{output_model_path}/encoder.pkl')
-
-    #on sauv le scaler
-    dump(scaler, f'{output_model_path}/scaler.pkl')
-
     input_dim = X.shape[1]
 
     #model
@@ -239,8 +214,20 @@ def train_save_model(csv_path, output_model_path, verbose=2):
         verbose=verbose
     )
 
-    #on sauvegarde le model
-    dump(model_full, f'{output_model_path}/model.pkl')
+    new_accuracy = history.history['accuracy'][-1]
+
+    #on sauv l'encoder
+    dump(encoder, f'{output_model_path}/encoder.pkl')
+    #on sauv le scaler
+    dump(scaler, f'{output_model_path}/scaler.pkl')
+    #on sauv le modèle et la dernière accuracy si elle est supérieure à celle actuelle
+    model_data = {
+        'model': model_full,
+        'last_accuracy': new_accuracy
+    }
+    if always_save_model or (current_acc <= new_accuracy or current_acc == None):
+        print("Dump Model...")
+        dump(model_data, f'{output_model_path}/model.pkl')
 
     return model_full, history
 
@@ -260,7 +247,10 @@ def save_feedback(audio_data, sample_rate, target, prediction, output_path):
     Features['prediction'] = prediction
     
     file_exists_and_non_empty = os.path.isfile(output_path) and os.path.getsize(output_path) > 0
-    
+
     Features.to_csv(output_path, mode='a',
                     header=not file_exists_and_non_empty,
                     index=False)
+
+def should_retrain_model(k, prod_path):
+    return len(pd.read_csv(prod_path)) % k == 0

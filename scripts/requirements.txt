@@ -4,3 +4,9 @@ dill
 librosa
 numpy
 pandas
+seaborn
+keras
+joblib
+scikit-learn
+matplotlib
+tensorflow
