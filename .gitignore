@@ -3,3 +3,4 @@ venv/
 data/raw/
 .vscode
 __pycache__
+.idea/

@@ -42,12 +42,14 @@ else:
     raise ValueError("ref_data_report.csv does not exist. Please generate it by running gen_ref_prediction.py")
 
 # Load prod_data.csv
-prod_data = pd.read_csv("/data/prod_data.csv") 
+prod_data = pd.read_csv("/data/prod_data_bis.csv")
 
 WORKSPACE = "workspace"
 
-YOUR_PROJECT_NAME = "RAVDESS Emotion Voice Recognition"
-YOUR_PROJECT_DESCRIPTION = "Use of various audio datasets to identify emotion in voice."
+date_time_stamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%Ss")
+
+YOUR_PROJECT_NAME = "Emotion Voice Recognition"
+YOUR_PROJECT_DESCRIPTION = date_time_stamp
 
 emotion_labels = {'C','T','J','P','D','S','N'}
 
@@ -64,10 +66,9 @@ def create_report(i: int):
             ClassificationQualityMetric(),
             DatasetCorrelationsMetric(),
             ClassificationConfusionMatrix(),
-            DatasetMissingValuesMetric(),
+            #DatasetMissingValuesMetric(),
 
         ],
-        classification_labels=emotion_labels,
         timestamp=datetime.datetime.now() + datetime.timedelta(days=i),
     )
 
@@ -128,7 +129,7 @@ def create_project(workspace: WorkspaceBase):
             size=1,
         )
     )
-
+    '''
     project.dashboard.add_panel(
         DashboardPanelCounter(
             title="Nombre de données manquantes dans Prod data",
@@ -156,6 +157,7 @@ def create_project(workspace: WorkspaceBase):
             size=1,
         )
     )
+    '''
 
     project.dashboard.add_panel(
         DashboardPanelCounter(
