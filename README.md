@@ -1,5 +1,12 @@
 # Projet_ML1
 
+## Group members:
+  - Gernido Hanampatra
+  - Yanis Aumasson
+  - Maryem Jedid
+  - Clara Delianov
+  - Corentin Bohelay
+
 ## How to use
 
 - Run Docker Desktop
