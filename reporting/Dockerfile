@@ -6,7 +6,7 @@ COPY requirements.txt .
 
 RUN pip3 install --upgrade pip
 
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 CMD python project.py && evidently ui --host 0.0.0.0 --port 8082
 

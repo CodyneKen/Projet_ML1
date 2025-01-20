@@ -42,7 +42,7 @@ else:
     raise ValueError("ref_data_report.csv does not exist. Please generate it by running gen_ref_prediction.py")
 
 # Load prod_data.csv
-prod_data = pd.read_csv("/data/prod_data_bis.csv")
+prod_data = pd.read_csv("/data/prod_data.csv")
 
 WORKSPACE = "workspace"
 

@@ -13,7 +13,7 @@ COPY requirements.txt .
 RUN pip3 install --upgrade pip
 
 # Installe les dépendances listées dans requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Expose l'API sur le port 8080 de l'IP externe du conteneur
 CMD uvicorn api:app --host 0.0.0.0 --port 8080 --reload

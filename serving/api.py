@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-k = 3
+k = 10
 deploy_only_best_acc = True
 
 artifacts_path = "/artifacts/"
